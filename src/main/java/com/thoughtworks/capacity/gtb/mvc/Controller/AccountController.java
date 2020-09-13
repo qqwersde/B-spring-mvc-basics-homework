@@ -23,7 +23,7 @@ public class AccountController {
     @ResponseStatus(HttpStatus.CREATED)
     public void createUser(@RequestBody @Valid Account account) {
         if(accountSercive.userNameExsiting(account)){
-            throw new UserExistingException("用户已存在");
+                throw new UserExistingException("用户已存在");
         }
         accountSercive.createAccount(account);
     }

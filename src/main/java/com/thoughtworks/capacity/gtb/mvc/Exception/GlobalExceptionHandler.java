@@ -28,4 +28,10 @@ public class GlobalExceptionHandler {
         ErrorResult errorResult = new ErrorResult(400,ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResult);
     }
+
+    @ExceptionHandler(FileException.class)
+    public ResponseEntity<ErrorResult> handle(FileException ex){
+        ErrorResult errorResult = new ErrorResult(403,ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResult);
+    }
 }
