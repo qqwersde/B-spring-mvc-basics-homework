@@ -1,10 +1,33 @@
 package com.thoughtworks.capacity.gtb.mvc.Service;
 
 import com.thoughtworks.capacity.gtb.mvc.Exception.FileException;
+import com.thoughtworks.capacity.gtb.mvc.Exception.UserExistingException;
 import com.thoughtworks.capacity.gtb.mvc.model.LightApp;
 import com.thoughtworks.capacity.gtb.mvc.model.LightAppZip;
+import io.sigpipe.jbsdiff.Diff;
+import io.sigpipe.jbsdiff.InvalidHeaderException;
+import io.sigpipe.jbsdiff.ui.FileUI;
+import org.apache.commons.compress.compressors.CompressorException;
+import org.apache.commons.compress.utils.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpOutputMessage;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,6 +35,9 @@ import java.util.List;
 @Service
 public class LightService {
   private final List<LightApp> lightAppList = new ArrayList<>();
+
+  @Value("${max-size}")
+  private int size;
 
   public LightService() {
     LightAppZip lightAppZipOneVersionOne = new LightAppZip("AppOneZipOne", "AppOne", 100, 1);
@@ -51,8 +77,8 @@ public class LightService {
     return lightAppZip;
   }
 
-  public List<LightAppZip> getAllLatestZipVersions() {
-    List<LightAppZip> lightAppZips;
+  public void download(HttpServletResponse response) throws IOException, CompressorException, InvalidHeaderException {
+    /*List<LightAppZip> lightAppZips;
     List<LightAppZip> allLightAppZips = null;
     int max;
     LightAppZip lightAppZip;
@@ -73,7 +99,49 @@ public class LightService {
         }
       }
     }
-    return allLightAppZips;
+    return allLightAppZips;*/
+    /*if (size>50){
+      throw new UserExistingException("超过大小");
+    }*/
+    File file1 = new File("/Users/yinzhonghao/GTB/SpringMvc/B-spring-mvc-basics-homework/src/main/java/com/thoughtworks/capacity/gtb/mvc/Service/buddy lunch(1).pdf");
+    File file2 = new File("/Users/yinzhonghao/GTB/SpringMvc/B-spring-mvc-basics-homework/src/main/java/com/thoughtworks/capacity/gtb/mvc/Service/buddy lunch(2).pdf");
+    InputStream inputStream = new FileInputStream(file1);
+    InputStream inputStream1 = new FileInputStream(file2);
+    final byte[] bytes = IOUtils.toByteArray(inputStream);
+    final byte[] bytes1 = IOUtils.toByteArray(inputStream1);
+
+    response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+    response.setCharacterEncoding("UTF-8");
+    OutputStream outputStream = response.getOutputStream();
+    response.setHeader("Content-Disposition", "attachment;filename=" + file1.getName());
+    /*int a = 0;
+    while((a = inputStream.read()) != -1){
+      outputStream.write(a);
+      outputStream.flush();
+    }
+    outputStream.close();*/
+    Diff.diff(bytes,bytes1,outputStream);
+
+
+  }
+
+
+  public ResponseEntity<InputStreamResource> downloadFile()
+          throws IOException {
+    FileSystemResource file = new FileSystemResource("/Users/yinzhonghao/GTB/SpringMvc/B-spring-mvc-basics-homework/src/main/java/com/thoughtworks/capacity/gtb/mvc/Service/1603423835376000.pdf");
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+    headers.add("Content-Disposition", String.format("attachment; filename=\"%s\"", file.getFilename()));
+    headers.add("Pragma", "no-cache");
+    headers.add("Expires", "0");
+    final InputStreamResource aNull = new InputStreamResource(file.getInputStream(), "test");
+    System.out.println(aNull.getDescription());
+    return ResponseEntity
+            .ok()
+            .headers(headers)
+            .contentLength(file.contentLength())
+            .contentType(MediaType.parseMediaType("application/octet-stream"))
+            .body(aNull);
   }
 
 }
